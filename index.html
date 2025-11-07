@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30 Pixel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #f8f9f8;
+            min-height: 100vh;
+            padding: 40px 60px;
+            position: relative;
+        }
+
+        .pixel-counter {
+            position: absolute;
+            top: 40px;
+            left: 60px;
+            font-size: 3.5em;
+            color: #3d9a7c;
+            font-weight: 400;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+        }
+
+        .pixel-number {
+            text-align: left;
+        }
+
+        .pixel-label {
+            white-space: nowrap;
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 40px;
+            right: 60px;
+            font-size: 3.5em;
+            color: #3d9a7c;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .nav-arrow:hover {
+            transform: translateX(5px);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 160px);
+            padding-top: 60px;
+        }
+
+        .video-container {
+            width: 800px;
+            height: 450px;
+            background: #d8d8d8;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .mode-container.hidden {
+            display: none;
+        }
+
+        .text-overlay {
+            position: absolute;
+            background: white;
+            color: black;
+            padding: 25px;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            text-align: left;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        video {
+            display: none;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .slider-container {
+            width: 950px;
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .slider-line {
+            width: 100%;
+            height: 2px;
+            background: #3d9a7c;
+            position: relative;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 60px;
+            background: transparent;
+            outline: none;
+            -webkit-appearance: none;
+            position: absolute;
+            top: -29px;
+            left: 0;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 60px;
+            height: 60px;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 60px;
+            height: 60px;
+            background: transparent;
+            cursor: pointer;
+            border: none;
+            position: relative;
+        }
+
+        .starburst {
+            position: absolute;
+            top: -29px;
+            width: 60px;
+            height: 60px;
+            pointer-events: none;
+            transition: left 0.1s ease;
+        }
+
+        .starburst svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 3em;
+            color: #3d9a7c;
+            cursor: pointer;
+            padding: 0;
+            transition: opacity 0.2s;
+        }
+
+        .control-btn:hover {
+            opacity: 0.7;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            left: 60px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.7em;
+            color: #3d9a7c;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 50px 60px;
+            border-radius: 0;
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .modal-title {
+            font-size: 2em;
+            color: #3d9a7c;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            background: none;
+            border: 2px solid #3d9a7c;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 1.5em;
+            color: #3d9a7c;
+            cursor: pointer;
+            padding: 15px 40px;
+            transition: all 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #3d9a7c;
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            border-color: #999;
+            color: #999;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #999;
+            color: white;
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                padding: 30px;
+            }
+
+            .pixel-counter {
+                font-size: 2.5em;
+                top: 30px;
+                left: 30px;
+            }
+
+            .video-container {
+                width: 90vw;
+                height: 50vw;
+                max-width: 800px;
+                max-height: 450px;
+            }
+
+            .slider-container {
+                width: 90vw;
+                max-width: 950px;
+            }
+
+            .control-btn {
+                font-size: 2em;
+            }
+
+            .footer {
+                left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pixel-counter" id="pixelCounter">
+        <span class="pixel-label" id="pixelLabel">Pixel</span>
+        <span class="pixel-number" id="pixelDisplay">0</span>
+    </div>
+
+    <div class="nav-arrow" id="navArrow">→</div>
+
+    <div class="main-container">
+        <div class="video-container">
+            <!-- Pixel Mode -->
+            <div class="mode-container" id="pixelModeContainer">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <!-- Text Mode -->
+            <div class="mode-container hidden" id="textModeContainer">
+                <video id="videoText" autoplay playsinline></video>
+                <canvas id="canvasText"></canvas>
+            </div>
+
+            <div class="placeholder" id="placeholder">Camera feed will appear here</div>
+        </div>
+
+        <div class="slider-container">
+            <div class="slider-line"></div>
+            <input type="range" id="pixelSlider" min="5" max="30" value="10" step="1">
+            <div class="starburst" id="starburst">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <g id="starburstGroup"></g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="startBtn">Start</button>
+            <button class="control-btn" id="stopBtn" disabled>Stop</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        A PRIVACY-FIRST EXPERIMENT<br>
+        USING MEDIAPIPE AND MODERN WEB STANDARDS
+    </div>
+
+    <!-- Save Recording Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-title">Save Recording?</div>
+            <div class="modal-buttons">
+                <button class="modal-btn" id="saveBtn">Save</button>
+                <button class="modal-btn secondary" id="discardBtn">Discard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
+
+    <script>
+        // Pixel Mode Elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        // Text Mode Elements
+        const videoText = document.getElementById('videoText');
+        const canvasText = document.getElementById('canvasText');
+        const ctxText = canvasText.getContext('2d', { willReadFrequently: true });
+        
+        // UI Elements
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const pixelSlider = document.getElementById('pixelSlider');
+        const pixelDisplay = document.getElementById('pixelDisplay');
+        const pixelLabel = document.getElementById('pixelLabel');
+        const starburst = document.getElementById('starburst');
+        const starburstGroup = document.getElementById('starburstGroup');
+        const placeholder = document.getElementById('placeholder');
+        const saveModal = document.getElementById('saveModal');
+        const saveBtn = document.getElementById('saveBtn');
+        const discardBtn = document.getElementById('discardBtn');
+        const navArrow = document.getElementById('navArrow');
+        const pixelModeContainer = document.getElementById('pixelModeContainer');
+        const textModeContainer = document.getElementById('textModeContainer');
+
+        let currentMode = 'pixel'; // 'pixel' or 'text'
+        let faceDetection;
+        let camera, cameraText;
+        let stream;
+        let pixelSize = 10;
+        let textLevel = 10;
+        let detectedFaces = [];
+        let detectedFacesText = [];
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let totalPixelsOverlayed = 0;
+
+        // Facial recognition text content - expands with slider
+        const textLevels = [
+            // Level 1 (5-8): Very basic
+            "Face detected",
+            
+            // Level 2 (9-12): Introduction
+            "FACIAL RECOGNITION\n\nFacial recognition technology identifies individuals by analyzing unique facial features and patterns.",
+            
+            // Level 3 (13-16): How it works
+            "FACIAL RECOGNITION\n\nFacial recognition technology identifies individuals by analyzing unique facial features and patterns.\n\nThe system measures distances between key points like eyes, nose, and mouth to create a unique biometric 'faceprint' stored in databases.",
+            
+            // Level 4 (17-20): Applications & concerns
+            "FACIAL RECOGNITION\n\nFacial recognition technology identifies individuals by analyzing unique facial features and patterns.\n\nThe system measures distances between key points like eyes, nose, and mouth to create a unique biometric 'faceprint' stored in databases.\n\nWidely deployed in airports, smartphones, social media, and public surveillance systems. Often operates without explicit consent or knowledge.\n\nMajor concerns include privacy violations, unauthorized tracking, and potential misuse by authorities.",
+            
+            // Level 5 (21-24): Bias and accuracy
+            "FACIAL RECOGNITION\n\nFacial recognition technology identifies individuals by analyzing unique facial features and patterns.\n\nThe system measures distances between key points like eyes, nose, and mouth to create a unique biometric 'faceprint' stored in databases.\n\nWidely deployed in airports, smartphones, social media, and public surveillance systems. Often operates without explicit consent or knowledge.\n\nMajor concerns include privacy violations, unauthorized tracking, and potential misuse by authorities.\n\nACCURACY DISPARITIES:\nResearch shows error rates up to 35% higher for Black and Asian faces compared to white faces. Women of color experience the highest misidentification rates.\n\nThese biases have led to wrongful arrests and discriminatory enforcement patterns.",
+            
+            // Level 6 (25-30): Only three key sections
+            "CURRENT APPLICATIONS:\n• Law enforcement surveillance and investigations\n• Border control and airport security screening\n• Social media automatic photo tagging\n• Smartphone unlock features\n• Retail analytics and targeted advertising\n• Employee attendance tracking\n• Public space monitoring\n\nPRIVACY & CIVIL LIBERTIES CONCERNS:\nContinuous surveillance capabilities enable tracking of individuals' movements, associations, and activities without consent. Data breaches can expose sensitive biometric information that, unlike passwords, cannot be changed. Multiple studies demonstrate significant accuracy disparities across demographics with error rates 10-100 times higher for African American and Asian faces.\n\nFUTURE IMPLICATIONS:\nAs accuracy improves and deployment expands, the technology poses fundamental questions about privacy, consent, and surveillance in democratic societies. Several cities have banned government use, while commercial deployment continues largely unregulated."
+        ];
+
+        // Navigation between modes
+        navArrow.addEventListener('click', () => {
+            if (currentMode === 'pixel') {
+                switchToTextMode();
+            } else {
+                switchToPixelMode();
+            }
+        });
+
+        function switchToTextMode() {
+            currentMode = 'text';
+            navArrow.textContent = '←';
+            pixelModeContainer.classList.add('hidden');
+            textModeContainer.classList.remove('hidden');
+            
+            // Change "Pixel 0" to "Info"
+            pixelLabel.textContent = 'Info';
+            pixelDisplay.textContent = '';
+            
+            // Reset slider for text mode
+            pixelSlider.value = 10;
+            textLevel = 10;
+            updateStarburst(10);
+            
+            if (camera) {
+                camera.stop();
+            }
+            if (cameraText && stream) {
+                cameraText.start();
+            }
+        }
+
+        function switchToPixelMode() {
+            currentMode = 'pixel';
+            navArrow.textContent = '→';
+            textModeContainer.classList.add('hidden');
+            pixelModeContainer.classList.remove('hidden');
+            
+            // Change back to "Pixel 0"
+            pixelLabel.textContent = 'Pixel';
+            pixelDisplay.textContent = '0';
+            
+            // Reset slider for pixel mode
+            pixelSlider.value = 10;
+            pixelSize = 10;
+            updateStarburst(10);
+            
+            if (cameraText) {
+                cameraText.stop();
+            }
+            if (camera && stream) {
+                camera.start();
+            }
+        }
+
+        // Create starburst SVG
+        function createStarburst(numRays) {
+            starburstGroup.innerHTML = '';
+            const centerX = 50;
+            const centerY = 50;
+            const innerRadius = 8;
+            const outerRadius = 30;
+
+            for (let i = 0; i < numRays; i++) {
+                const angle = (i * 360 / numRays) * (Math.PI / 180);
+                const x1 = centerX + innerRadius * Math.cos(angle);
+                const y1 = centerY + innerRadius * Math.sin(angle);
+                const x2 = centerX + outerRadius * Math.cos(angle);
+                const y2 = centerY + outerRadius * Math.sin(angle);
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#6b5fb5');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('stroke-linecap', 'round');
+                starburstGroup.appendChild(line);
+            }
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', centerX);
+            circle.setAttribute('cy', centerY);
+            circle.setAttribute('r', innerRadius);
+            circle.setAttribute('fill', '#6b5fb5');
+            starburstGroup.appendChild(circle);
+        }
+
+        function updateStarburst(value) {
+            const numRays = Math.max(4, Math.floor((value - 5) / 2) + 4);
+            createStarburst(numRays);
+            
+            const sliderWidth = pixelSlider.offsetWidth;
+            const percent = (value - 5) / (30 - 5);
+            const position = percent * (sliderWidth - 60);
+            starburst.style.left = position + 'px';
+        }
+
+        pixelSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            
+            if (currentMode === 'pixel') {
+                pixelSize = value;
+                if (!camera || stopBtn.disabled) {
+                    pixelDisplay.textContent = '0';
+                }
+            } else {
+                textLevel = value;
+            }
+            
+            updateStarburst(value);
+        });
+
+        updateStarburst(10);
+
+        // Initialize MediaPipe Face Detection
+        async function initFaceDetection() {
+            try {
+                faceDetection = new FaceDetection({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`;
+                    }
+                });
+
+                faceDetection.setOptions({
+                    model: 'short',
+                    minDetectionConfidence: 0.5
+                });
+
+                faceDetection.onResults(onResults);
+            } catch (error) {
+                console.error('Error initializing face detection:', error);
+            }
+        }
+
+        function onResults(results) {
+            if (currentMode === 'pixel') {
+                detectedFaces = results.detections || [];
+            } else {
+                detectedFacesText = results.detections || [];
+            }
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                });
+
+                // Setup Pixel Mode
+                video.srcObject = stream.clone();
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    placeholder.style.display = 'none';
+                    
+                    camera = new Camera(video, {
+                        onFrame: async () => {
+                            if (currentMode === 'pixel') {
+                                await faceDetection.send({ image: video });
+                                drawPixelFrame();
+                            }
+                        },
+                        width: 1280,
+                        height: 720
+                    });
+                    
+                    if (currentMode === 'pixel') {
+                        camera.start();
+                    }
+                };
+
+                // Setup Text Mode
+                videoText.srcObject = stream.clone();
+                videoText.onloadedmetadata = () => {
+                    canvasText.width = videoText.videoWidth;
+                    canvasText.height = videoText.videoHeight;
+                    
+                    cameraText = new Camera(videoText, {
+                        onFrame: async () => {
+                            if (currentMode === 'text') {
+                                await faceDetection.send({ image: videoText });
+                                drawTextFrame();
+                            }
+                        },
+                        width: 1280,
+                        height: 720
+                    });
+                    
+                    if (currentMode === 'text') {
+                        cameraText.start();
+                    }
+                };
+
+                startRecording();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Camera access denied. Please allow camera access to use this app.');
+            }
+        }
+
+        function drawPixelFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            totalPixelsOverlayed = 0;
+
+            if (detectedFaces && detectedFaces.length > 0) {
+                detectedFaces.forEach(detection => {
+                    const bbox = detection.boundingBox;
+                    const x = bbox.xCenter * canvas.width - (bbox.width * canvas.width) / 2;
+                    const y = bbox.yCenter * canvas.height - (bbox.height * canvas.height) / 2;
+                    const width = bbox.width * canvas.width;
+                    const height = bbox.height * canvas.height;
+
+                    const padding = 30;
+                    const px = Math.max(0, x - padding);
+                    const py = Math.max(0, y - padding);
+                    const pw = Math.min(canvas.width - px, width + padding * 2);
+                    const ph = Math.min(canvas.height - py, height + padding * 2);
+
+                    const pixelsInRegion = pixelateFace(px, py, pw, ph);
+                    totalPixelsOverlayed += pixelsInRegion;
+                });
+            }
+
+            pixelDisplay.textContent = totalPixelsOverlayed.toLocaleString();
+        }
+
+        function drawTextFrame() {
+            ctxText.clearRect(0, 0, canvasText.width, canvasText.height);
+            ctxText.drawImage(videoText, 0, 0, canvasText.width, canvasText.height);
+
+            if (detectedFacesText && detectedFacesText.length > 0) {
+                detectedFacesText.forEach(detection => {
+                    const bbox = detection.boundingBox;
+                    const x = bbox.xCenter * canvasText.width - (bbox.width * canvasText.width) / 2;
+                    const y = bbox.yCenter * canvasText.height - (bbox.height * canvasText.height) / 2;
+                    const width = bbox.width * canvasText.width;
+                    const height = bbox.height * canvasText.height;
+
+                    drawTextOverlay(x, y, width, height);
+                });
+            }
+        }
+
+        function drawTextOverlay(x, y, width, height) {
+            // Determine text content based on slider level
+            let textContent;
+            if (textLevel <= 8) {
+                textContent = textLevels[0];
+            } else if (textLevel <= 12) {
+                textContent = textLevels[1];
+            } else if (textLevel <= 16) {
+                textContent = textLevels[2];
+            } else if (textLevel <= 20) {
+                textContent = textLevels[3];
+            } else if (textLevel <= 24) {
+                textContent = textLevels[4];
+            } else {
+                textContent = textLevels[5];
+            }
+
+            // Calculate square size based on text level
+            let squareSize;
+            if (textLevel <= 8) {
+                squareSize = 120;
+            } else if (textLevel <= 12) {
+                squareSize = 200;
+            } else if (textLevel <= 16) {
+                squareSize = 280;
+            } else if (textLevel <= 20) {
+                squareSize = 360;
+            } else if (textLevel <= 24) {
+                squareSize = 440;
+            } else {
+                squareSize = 520;
+            }
+
+            // Center the square on the face
+            const blockX = x + (width - squareSize) / 2;
+            const blockY = y + (height - squareSize) / 2;
+
+            // Draw white background square
+            ctxText.fillStyle = 'white';
+            ctxText.fillRect(blockX, blockY, squareSize, squareSize);
+
+            // Draw text
+            ctxText.fillStyle = 'black';
+            ctxText.font = '13px "Helvetica Neue", Helvetica, Arial, sans-serif';
+            ctxText.textAlign = 'left';
+            ctxText.textBaseline = 'top';
+
+            const padding = 25;
+            const maxWidth = squareSize - (padding * 2);
+            const lineHeight = 19;
+            let currentY = blockY + padding;
+
+            const lines = textContent.split('\n');
+            
+            lines.forEach(line => {
+                if (line.trim() === '') {
+                    currentY += lineHeight / 2;
+                    return;
+                }
+
+                // Word wrap
+                const words = line.split(' ');
+                let currentLine = '';
+
+                words.forEach((word, index) => {
+                    const testLine = currentLine + word + ' ';
+                    const metrics = ctxText.measureText(testLine);
+                    
+                    if (metrics.width > maxWidth && currentLine !== '') {
+                        ctxText.fillText(currentLine.trim(), blockX + padding, currentY);
+                        currentY += lineHeight;
+                        currentLine = word + ' ';
+                    } else {
+                        currentLine = testLine;
+                    }
+                });
+                
+                if (currentLine.trim() !== '') {
+                    ctxText.fillText(currentLine.trim(), blockX + padding, currentY);
+                    currentY += lineHeight;
+                }
+            });
+        }
+
+        function pixelateFace(x, y, width, height) {
+            const imageData = ctx.getImageData(x, y, width, height);
+            const result = pixelateImageData(imageData, pixelSize);
+            ctx.putImageData(result.imageData, x, y);
+            
+            return result.pixelBlockCount;
+        }
+
+        function pixelateImageData(imageData, pixelSize) {
+            const { width, height, data } = imageData;
+            let pixelBlockCount = 0;
+            
+            for (let y = 0; y < height; y += pixelSize) {
+                for (let x = 0; x < width; x += pixelSize) {
+                    const pixelIndexPosition = (x + y * width) * 4;
+                    
+                    const r = data[pixelIndexPosition];
+                    const g = data[pixelIndexPosition + 1];
+                    const b = data[pixelIndexPosition + 2];
+                    
+                    pixelBlockCount++;
+                    
+                    for (let dy = 0; dy < pixelSize && y + dy < height; dy++) {
+                        for (let dx = 0; dx < pixelSize && x + dx < width; dx++) {
+                            const targetIndex = ((x + dx) + (y + dy) * width) * 4;
+                            data[targetIndex] = r;
+                            data[targetIndex + 1] = g;
+                            data[targetIndex + 2] = b;
+                        }
+                    }
+                }
+            }
+            
+            return {
+                imageData: imageData,
+                pixelBlockCount: pixelBlockCount
+            };
+        }
+
+        function stopCamera() {
+            if (camera) {
+                camera.stop();
+            }
+            if (cameraText) {
+                cameraText.stop();
+            }
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            if (isRecording) {
+                mediaRecorder.stop();
+            }
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            totalPixelsOverlayed = 0;
+            pixelDisplay.textContent = '0';
+        }
+
+        function startRecording() {
+            recordedChunks = [];
+            const activeCanvas = currentMode === 'pixel' ? canvas : canvasText;
+            const canvasStream = activeCanvas.captureStream(30);
+            
+            mediaRecorder = new MediaRecorder(canvasStream, {
+                mimeType: 'video/webm;codecs=vp9'
+            });
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                isRecording = false;
+                saveModal.classList.add('active');
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+        }
+
+        saveBtn.addEventListener('click', () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentMode}-video-${Date.now()}.webm`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            saveModal.classList.remove('active');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctxText.clearRect(0, 0, canvasText.width, canvasText.height);
+            placeholder.style.display = 'block';
+        });
+
+        discardBtn.addEventListener('click', () => {
+            recordedChunks = [];
+            saveModal.classList.remove('active');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctxText.clearRect(0, 0, canvasText.width, canvasText.height);
+            placeholder.style.display = 'block';
+        });
+
+        startBtn.addEventListener('click', startCamera);
+        stopBtn.addEventListener('click', stopCamera);
+
+        initFaceDetection();
+    </script>
+</body>
+</html>
