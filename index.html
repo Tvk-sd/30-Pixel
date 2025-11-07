@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Georgia', 'Times New Roman', serif;
+            font-family: 'Helvetica Neue ', 'Abyssinica SIL', serif;
             background: #f8f9f8;
             min-height: 100vh;
             padding: 40px 60px;
@@ -68,7 +68,7 @@
             width: 800px;
             height: 450px;
             background: #d8d8d8;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
         }
@@ -126,7 +126,7 @@
         .slider-container {
             width: 950px;
             position: relative;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
         }
 
         .slider-line {
@@ -182,6 +182,13 @@
             border: none !important;
             outline: none !important;
             backdrop-filter: none !important;
+            isolation: isolate;
+            mix-blend-mode: normal;
+        }
+
+        .starburst::before,
+        .starburst::after {
+            display: none !important;
         }
 
         .starburst * {
@@ -318,46 +325,67 @@
 
         @media (max-width: 1200px) {
             body {
-                padding: 20px;
+                padding: 15px;
+                padding-bottom: 80px;
             }
 
             .pixel-counter {
-                font-size: 2em;
-                top: 20px;
-                left: 20px;
-                gap: 10px;
+                font-size: 1.8em;
+                top: 15px;
+                left: 15px;
+                gap: 8px;
             }
 
             .nav-arrow {
-                font-size: 2em;
-                top: 20px;
-                right: 20px;
+                font-size: 1.8em;
+                top: 15px;
+                right: 15px;
             }
 
             .main-container {
-                padding-top: 80px;
+                padding-top: 60px;
+                min-height: auto;
             }
 
             .video-container {
-                width: calc(100vw - 40px);
-                height: calc((100vw - 40px) * 0.5625);
+                width: calc(100vw - 30px);
+                height: calc((100vw - 30px) * 0.5625);
                 max-width: 800px;
                 max-height: 450px;
+                margin-bottom: 15px;
             }
 
             .slider-container {
-                width: calc(100vw - 40px);
+                width: calc(100vw - 30px);
                 max-width: 800px;
+                margin-bottom: 15px;
+            }
+
+            .controls {
+                margin-bottom: 15px;
+                gap: 30px;
             }
 
             .control-btn {
-                font-size: 2em;
+                font-size: 1.8em;
             }
 
             .footer {
-                left: 20px;
-                bottom: 20px;
-                font-size: 0.6em;
+                position: fixed;
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                font-size: 0.55em;
+                text-align: left;
+                width: auto;
+            }
+
+            /* Extra aggressive box removal for mobile */
+            .starburst {
+                box-shadow: 0 0 0 0 transparent !important;
+                -webkit-box-shadow: 0 0 0 0 transparent !important;
+                filter: drop-shadow(0 0 0 transparent) !important;
+                -webkit-filter: drop-shadow(0 0 0 transparent) !important;
             }
         }
     </style>
